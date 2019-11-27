@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: e-account
+  cloud:
+    config:
+      uri: http://master:9001
