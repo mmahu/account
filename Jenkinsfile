@@ -40,6 +40,7 @@ pipeline {
                 sh "docker service create \
                     --name ${name} \
                     --no-resolve-image \
+                    --limit-memory 512M \
                     --publish ${port} \
                     ${registry}/${name}:${buildNumber}"
             }
