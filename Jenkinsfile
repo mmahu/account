@@ -18,7 +18,7 @@ pipeline {
         }
         stage('fetch') {
             steps {
-                git url: 'https://github.com/mmahu/gateway.git', branch: 'master'
+                git url: 'https://github.com/mmahu/account.git', branch: 'master'
             }
         }
         stage('build') {
