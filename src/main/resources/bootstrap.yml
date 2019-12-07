@@ -4,3 +4,6 @@ spring:
   cloud:
     config:
       uri: http://master:9001
+logging:
+  level:
+    root: DEBUG
