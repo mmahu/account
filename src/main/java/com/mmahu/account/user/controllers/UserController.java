@@ -10,8 +10,8 @@ import java.security.Principal;
 public class UserController {
 
     @GetMapping("/buyer")
-    public User getBuyer() {
-        return new User().setName("buyer smith");
+    public User getBuyer(Principal principal) {
+        return new User().setId(principal.getName()).setName("buyer smith");
     }
 
     @GetMapping("/seller")
