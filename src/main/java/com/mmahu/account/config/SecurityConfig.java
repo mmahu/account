@@ -1,6 +1,7 @@
 package com.mmahu.account.config;
 
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,12 +11,9 @@ import org.springframework.security.jwt.JwtHelper;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
-import reactor.core.CoreSubscriber;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-import java.time.Instant;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,8 +29,10 @@ public class SecurityConfig {
     @Bean
     public ReactiveJwtDecoder jwtDecoder() {
         return (token) -> {
-            Map<String, Object> claims = claims(JwtHelper.decode(token).getClaims());
-            return Mono.just(new Jwt(token, Instant.now(), Instant.now().plusMillis(100), headers(), claims));
+            String json = JwtHelper.decode(token).getClaims();
+            Map<String, Object> claims = toObject(json, Map.class);
+            JwtDto jwt = toObject(json, JwtDto.class);
+            return Mono.just(new Jwt(token, jwt.getIat(), jwt.getExp(), headers(), claims));
         };
     }
 
@@ -43,26 +43,23 @@ public class SecurityConfig {
         return headers;
     }
 
-    private Map<String, Object> claims(String json) {
+    private <T> T toObject(String json, Class<T> clazz) {
         ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
         try {
-            return mapper.readValue(json, Map.class);
+            return mapper.readValue(json, clazz);
         } catch (IOException e) {
-            return Collections.emptyMap();
+            throw new RuntimeException("Cannot deserialize Jwt token");
         }
     }
 
-
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
-        http.authorizeExchange().anyExchange().authenticated().and().oauth2ResourceServer().jwt();
+        http.authorizeExchange()
+                .pathMatchers("/seller").hasAuthority("SCOPE_ROLE_SELLER")
+                .pathMatchers("/buyer").hasAuthority("SCOPE_ROLE_BUYER")
+                .and().oauth2ResourceServer().jwt();
         return http.build();
-
     }
 
-//    public void configure(HttpSecurity http) throws Exception {
-//        http.authorizeRequests()
-//                .antMatchers("/account").permitAll()
-//                .anyRequest().authenticated().and().oauth2ResourceServer().jwt();
-//    }
 }
