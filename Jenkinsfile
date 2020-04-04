@@ -25,6 +25,7 @@ pipeline {
             steps {
                 sh 'chmod +x gradlew'
                 sh "echo ${buildNumber}"
+                sh 'set JAVA_HOME=/usr/lib/jvm/java-11-openjdk-armhf/bin'
                 sh "./gradlew clean assemble -PbuildNumber=${buildNumber}"
             }
         }
