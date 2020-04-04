@@ -2,6 +2,7 @@ def name=""
 def port=""
 def registry=""
 def buildNumber=""
+def javaHome=""
 
 pipeline {
     agent any
@@ -13,6 +14,7 @@ pipeline {
                     port = "9002:9002"
                     registry = "master:5000"
                     buildNumber = "1.0.$BUILD_NUMBER"
+                    javaHome = "/usr/lib/jvm/java-11-openjdk-armhf/bin"
                 }
             }
         }
@@ -25,8 +27,7 @@ pipeline {
             steps {
                 sh 'chmod +x gradlew'
                 sh "echo ${buildNumber}"
-                sh 'set JAVA_HOME=/usr/lib/jvm/java-11-openjdk-armhf/bin'
-                sh "./gradlew clean assemble -PbuildNumber=${buildNumber}"
+                sh "./gradlew clean assemble -PbuildNumber=${buildNumber} -Dorg.gradle.java.home=${javaHome}"
             }
         }
         stage('imaging') {
