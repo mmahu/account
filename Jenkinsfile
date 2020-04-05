@@ -14,7 +14,7 @@ pipeline {
                     port = "9002:9002"
                     registry = "master:5000"
                     buildNumber = "1.0.$BUILD_NUMBER"
-                    javaHome = "/usr/lib/jvm/java-11-openjdk-armhf/bin"
+                    javaHome = "/usr/lib/jvm/java-1.11.0-openjdk-armhf/bin/"
                 }
             }
         }
