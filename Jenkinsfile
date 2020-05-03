@@ -14,7 +14,6 @@ pipeline {
                     port = "9002:9002"
                     registry = "master:5000"
                     buildNumber = "1.0.$BUILD_NUMBER"
-                    javaHome = "/usr/lib/jvm/java-1.11.0-openjdk-armhf/bin/"
                 }
             }
         }
@@ -27,12 +26,12 @@ pipeline {
             steps {
                 sh 'chmod +x gradlew'
                 sh "echo ${buildNumber}"
-                sh "./gradlew clean assemble -PbuildNumber=${buildNumber} -Dorg.gradle.java.home=${javaHome}"
+                sh "./gradlew clean assemble -PbuildNumber=${buildNumber} -Dorg.gradle.java.home=/usr/local/jdk-11.0.2"
             }
         }
         stage('imaging') {
             steps {
-                sh "docker build . -t ${registry}/${name}:${buildNumber}"
+                sh "docker buildx build --platform=linux/arm64/v8 . -t ${registry}/${name}:${buildNumber} --load"
                 sh "docker push ${registry}/${name}"
             }
         }
@@ -41,10 +40,13 @@ pipeline {
                 sh "docker service rm ${name} || true"
                 sh "docker service create \
                     --name ${name} \
-                    --no-resolve-image \
-                    --limit-memory 512M \
                     --publish ${port} \
                     ${registry}/${name}:${buildNumber}"
+            }
+        }
+        stage('clean up') {
+            steps {
+                sh "docker image prune --all -f"
             }
         }
     }
