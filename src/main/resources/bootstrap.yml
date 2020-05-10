@@ -3,4 +3,4 @@ spring:
     name: e-account
   cloud:
     config:
-      uri: http://192.168.0.19:9001
+      uri: http://192.168.0.25:9001
